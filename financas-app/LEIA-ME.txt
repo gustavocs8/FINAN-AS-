@@ -1,0 +1,54 @@
+FINANÇAS DO GUSTAVO - INSTALAÇÃO
+
+Tudo é feito no app: lançamentos, compras parceladas, categorias, contas,
+cartões e orçamento. Os dados ficam guardados numa planilha que o próprio
+app cria no seu Google Drive, chamada "Finanças do Gustavo (dados do app)".
+Você não precisa abrir nem alimentar essa planilha.
+
+O pacote tem duas partes:
+  app/                 o aplicativo (publicar no Netlify)
+  apps-script/Code.gs  o banco de dados do app (colar no Apps Script)
+
+1. BANCO DE DADOS (uma vez, no computador)
+   a) Acesse script.google.com e clique em Novo projeto.
+   b) Apague o conteúdo, cole todo o Code.gs e salve (nome sugerido:
+      Finanças do Gustavo).
+   c) No menu de funções, escolha "autorizar" e clique em Executar.
+      Autorize o acesso. Se aparecer "O Google não verificou este app",
+      clique em Avançado > Acessar. Isso cria a planilha de dados.
+   d) Implantar > Nova implantação > engrenagem > App da Web.
+      Executar como: Eu
+      Quem pode acessar: Qualquer pessoa
+   e) Clique em Implantar e copie o URL do app da Web (termina em /exec).
+
+2. PUBLICAR O APP
+   Descompacte o pacote e arraste a pasta "app" para app.netlify.com/drop
+   (ou para o site que você já usa no Netlify).
+
+3. CONFIGURAR NO CELULAR
+   a) Abra o endereço do Netlify no celular.
+   b) Informe seu nome, o URL do passo 1e e a chave de acesso:
+      LaFgQYI7JAwX4p28
+   c) Instale: no Android (Chrome) use "Instalar app"; no iPhone (Safari)
+      use Compartilhar > Adicionar à Tela de Início.
+
+4. CONVIDAR SUA ESPOSA
+   No app, toque na engrenagem > Copiar link de convite e envie a ela.
+   Ela abre o link, informa o nome e instala do mesmo jeito.
+   O link contém a chave: envie só para quem pode lançar.
+
+USO
+- Compras parceladas: lance no cartão de crédito e escolha o número de
+  parcelas. O app cria uma parcela em cada mês.
+- Sem internet, o lançamento fica guardado no celular e sobe sozinho
+  quando a conexão voltar. Ajustes (categorias, cartões, orçamento)
+  só são salvos on-line.
+- Ajustes > Exportar gera um arquivo CSV do ano que abre no Excel.
+
+MANUTENÇÃO
+- Se alterar o Code.gs: Implantar > Gerenciar implantações > editar >
+  Nova versão. O URL continua o mesmo.
+- Para trocar a chave, altere a linha CHAVE no Code.gs, publique nova
+  versão e informe a nova chave nos celulares (engrenagem).
+- Não apague a planilha "Finanças do Gustavo (dados do app)": ela é o
+  banco de dados.

@@ -1,0 +1,699 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Finanças do Gustavo</title>
+<meta name="theme-color" content="#0d6b57">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Finanças">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600;700&display=swap">
+<style>
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+:root{padding-top:env(safe-area-inset-top,0px)}
+body{margin:0}
+[hidden]{display:none!important}
+
+/* Layout: app de uma coluna para celular, cabeçalho do mês no topo, barra de abas fixa embaixo com botão de lançar ao centro */
+:root{
+  --bg:#f3f5f4; --surface:#ffffff; --sunk:#e8ecea; --line:#d6ddd9;
+  --ink:#16201c; --muted:#5b6a63; --accent:#0d6b57; --accent-ink:#ffffff;
+  --in:#11795a; --out:#b23b2e; --warn:#a86a00; --track:#dfe5e2;
+  --f-display:"Sora", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Manrope", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1513; --surface:#18201d; --sunk:#111816; --line:#2a3531;
+  --ink:#e6ece9; --muted:#97a7a0; --accent:#3fbf9b; --accent-ink:#06231b;
+  --in:#45c497; --out:#ff8a7a; --warn:#f2b33d; --track:#26302c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1513; --surface:#18201d; --sunk:#111816; --line:#2a3531;
+  --ink:#e6ece9; --muted:#97a7a0; --accent:#3fbf9b; --accent-ink:#06231b;
+  --in:#45c497; --out:#ff8a7a; --warn:#f2b33d; --track:#26302c; color-scheme:dark}
+
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));
+  padding-block:0 calc(96px + env(safe-area-inset-bottom, 0px))}
+.wrap{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance}
+h2{font-size:15px;font-weight:600}
+.num{font-variant-numeric:tabular-nums;font-family:var(--f-display)}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+
+/* topo */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:14px 8px;display:flex;align-items:center;gap:8px}
+header.top h1{font-size:19px;font-weight:600;flex:1;text-transform:capitalize}
+.iconbtn{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;font-size:18px;line-height:1}
+.iconbtn:disabled{opacity:.4}
+
+/* resumo */
+.hero{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:grid;gap:14px}
+.hero p{margin:0}
+.saldo .v{font-size:32px;font-weight:600;letter-spacing:-.01em}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.pair .v{font-size:18px;font-weight:600}
+.in{color:var(--in)} .out{color:var(--out)}
+.meter{height:8px;border-radius:99px;background:var(--track);overflow:hidden}
+.meter i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.meter.hot i{background:var(--out)} .meter.warm i{background:var(--warn)}
+.note{font-size:13px;color:var(--muted)}
+
+section.block{display:grid;gap:10px}
+.rows{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.row{display:grid;grid-template-columns:1fr auto;gap:4px 12px;padding:12px 14px;border-top:1px solid var(--line);align-items:center}
+.row:first-child{border-top:0}
+.row .t{font-weight:600;min-width:0;overflow-wrap:anywhere}
+.row .s{font-size:12.5px;color:var(--muted);grid-column:1;min-width:0}
+.row .a{text-align:right;font-weight:600}
+.row .meter{grid-column:1/-1;height:6px}
+button.row{width:100%;background:none;border:0;border-top:1px solid var(--line);text-align:left}
+button.row:first-child{border-top:0}
+button.row:active{background:var(--sunk)}
+.pill{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:99px;background:var(--sunk);color:var(--muted);margin-left:6px;vertical-align:1px}
+.pill.prev{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
+.pill.atr{background:color-mix(in srgb,var(--out) 18%,transparent);color:var(--out)}
+.pill.pend{background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent)}
+.day{font-size:12px;color:var(--muted);font-weight:700;padding:14px 2px 6px;text-transform:capitalize}
+
+.search{width:100%;padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:6px 12px;font-size:13.5px;font-weight:500}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+
+.banner{border:1px solid var(--line);background:var(--surface);border-radius:var(--r);padding:14px 16px;display:grid;gap:8px}
+.banner.err{border-color:color-mix(in srgb,var(--out) 50%,var(--line))}
+.banner b{font-family:var(--f-display);font-weight:600}
+.btn{border:0;border-radius:12px;padding:12px 16px;font-weight:700;background:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:var(--sunk);color:var(--ink)}
+.btn.danger{background:transparent;color:var(--out);border:1px solid color-mix(in srgb,var(--out) 45%,var(--line))}
+.btn:disabled{opacity:.55}
+.empty{padding:22px 16px;text-align:center;color:var(--muted)}
+.skel{height:80px;border-radius:var(--r);background:var(--sunk);animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.5}}
+@media (prefers-reduced-motion:reduce){.skel{animation:none}}
+
+/* abas */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);
+  padding:6px max(16px, env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(16px, env(safe-area-inset-left,0px))}
+nav.tabs .in-nav{max-width:560px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr 64px 1fr 1fr;align-items:center}
+.tab{background:none;border:0;padding:8px 0;font-size:12px;font-weight:600;color:var(--muted);display:grid;justify-items:center;gap:2px}
+.tab svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8}
+.tab[aria-current="page"]{color:var(--accent)}
+.fab{width:54px;height:54px;border-radius:50%;border:0;background:var(--accent);color:var(--accent-ink);font-size:30px;line-height:1;justify-self:center;margin-top:-22px;box-shadow:0 6px 16px rgba(0,0,0,.18)}
+
+/* formulário */
+.sheet{position:fixed;inset:0;z-index:40;background:color-mix(in srgb,#000 45%,transparent);display:flex;align-items:flex-end;justify-content:center}
+.panel{background:var(--bg);width:100%;max-width:600px;max-height:94%;overflow-y:auto;border-radius:20px 20px 0 0;
+  padding:14px max(16px, env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(16px, env(safe-area-inset-left,0px));display:grid;gap:14px}
+.panel .head{display:flex;align-items:center;gap:10px}
+.panel .head h2{flex:1;font-size:17px}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--sunk);border-radius:12px;padding:3px;gap:3px}
+.seg button{border:0;background:none;border-radius:9px;padding:9px;font-weight:700;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.seg.tipo button[data-v="Despesa"][aria-pressed="true"]{color:var(--out)}
+.seg.tipo button[data-v="Receita"][aria-pressed="true"]{color:var(--in)}
+.field{display:grid;gap:5px}
+.field input,.field select{width:100%;padding:11px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);min-width:0}
+.valor{display:flex;align-items:baseline;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px 14px}
+.valor span{font-family:var(--f-display);color:var(--muted);font-size:20px}
+.valor input{border:0;background:none;font-family:var(--f-display);font-size:34px;font-weight:600;width:100%;min-width:0;font-variant-numeric:tabular-nums}
+.valor input:focus{outline:none}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid2>*{min-width:0}
+.actions{display:grid;grid-template-columns:auto 1fr;gap:10px}
+.actions.single{grid-template-columns:1fr}
+.confirm{border:1px solid color-mix(in srgb,var(--out) 45%,var(--line));border-radius:12px;padding:12px;display:grid;gap:10px;background:var(--surface)}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:60;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:99px;font-weight:600;font-size:14px;max-width:calc(100% - 32px)}
+
+.girando{animation:gira 1s linear infinite}
+@keyframes gira{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.girando{animation:none;opacity:.5}}
+
+.ajuste{display:grid;gap:10px;padding-top:14px;border-top:1px solid var(--line)}
+.ajuste h3{font-family:var(--f-display);font-size:15px;font-weight:600;margin:0}
+.addrow{display:grid;grid-template-columns:1fr auto;gap:8px}
+.addrow input,.ajuste>input,.cartao input,.orcrow input{width:100%;min-width:0;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface)}
+.chip.tira{display:inline-flex;align-items:center;gap:4px;padding-right:4px}
+.chip.tira button{border:0;background:none;color:var(--muted);width:26px;height:26px;border-radius:50%;font-size:12px}
+.chip.tira button:hover{background:var(--sunk)}
+.cartoes{display:grid;gap:10px}
+.cartao{display:grid;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px}
+.grid3{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:8px}
+.grid3>label{display:grid;gap:4px;min-width:0}
+.link{background:none;border:0;padding:0;font-weight:600;justify-self:start}
+.orc{display:grid;gap:6px}
+.orcrow{display:grid;grid-template-columns:1fr 130px;gap:10px;align-items:center}
+.orcrow span{min-width:0;overflow-wrap:anywhere}
+.panel h3+.note{margin:0}
+.ajuste .note{margin:0}
+</style>
+</head>
+<body>
+<header class="top wrap" style="flex-direction:row">
+  <button class="iconbtn" id="prev" aria-label="Mês anterior">‹</button>
+  <h1 id="mes">—</h1>
+  <button class="iconbtn" id="next" aria-label="Próximo mês">›</button>
+  <button class="iconbtn" id="reload" aria-label="Atualizar dados da planilha">↻</button>
+  <button class="iconbtn" id="config" aria-label="Ajustes">⚙</button>
+</header>
+
+<main class="wrap" id="main">
+  <div class="skel"></div><div class="skel"></div>
+  <p class="note">Abrindo o app…</p>
+</main>
+
+<nav class="tabs" aria-label="Seções">
+  <div class="in-nav">
+    <button class="tab" data-tab="inicio" aria-current="page"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg>Início</button>
+    <button class="tab" data-tab="lista"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg>Extrato</button>
+    <button class="fab" id="add" aria-label="Novo lançamento">+</button>
+    <button class="tab" data-tab="cartoes"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></svg>Cartões</button>
+    <button class="tab" data-tab="parcelas"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h6"/><circle cx="18" cy="16" r="3"/></svg>Parcelas</button>
+  </div>
+</nav>
+
+<div id="sheetRoot"></div>
+<div id="toastRoot"></div>
+<script>
+(function(){
+"use strict";
+const MESES = ["janeiro","fevereiro","março","abril","maio","junho","julho","agosto","setembro","outubro","novembro","dezembro"];
+const MES_CURTO = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+const SEMANA = ["domingo","segunda","terça","quarta","quinta","sexta","sábado"];
+
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const brl = n => (n<0?"−":"")+"R$ "+Math.abs(n).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
+const pct = n => (n*100).toLocaleString("pt-BR",{maximumFractionDigits:1})+"%";
+const r2 = n => Math.round(n*100)/100;
+function load(k,def){ try{ const v=localStorage.getItem(k); return v==null?def:JSON.parse(v);}catch(e){return def;} }
+function save(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+
+function parseMoney(v){
+  if(v==null||v==="") return 0;
+  if(typeof v==="number") return v;
+  let s=String(v).trim().replace(/[^\d,.-]/g,"");
+  if(s.includes(",")) s=s.replace(/\./g,"").replace(",",".");
+  const n=parseFloat(s); return isNaN(n)?0:n;
+}
+function parseDate(v){
+  if(!v) return null; if(typeof v==="object") return v;
+  const m=String(v).match(/^(\d{4})-(\d{2})-(\d{2})/); return m?{y:+m[1],m:+m[2]-1,d:+m[3]}:null;
+}
+const iso = p => `${p.y}-${String(p.m+1).padStart(2,"0")}-${String(p.d).padStart(2,"0")}`;
+const chaveMes = p => p.y*12+p.m;
+function somaMeses(p,n){
+  const t=p.y*12+p.m+n, y=Math.floor(t/12), m=t%12;
+  const ult=new Date(y,m+1,0).getDate();
+  return {y,m,d:Math.min(p.d,ult)};
+}
+
+/* Divide uma compra em n parcelas mensais. A última absorve o arredondamento. */
+function gerarParcelas(base, total, n){
+  const grupo=uid(), p0=parseDate(base.data);
+  const parcela=Math.floor(total/n*100)/100;
+  const desc=base.desc.replace(/\s+\d+\/\d+$/,"");
+  return Array.from({length:n},(_,i)=>({
+    ...base, id:uid(), grupo, parcela:`${i+1}/${n}`,
+    desc:`${desc} ${i+1}/${n}`,
+    data: iso(somaMeses(p0,i)),
+    valor: i===n-1 ? r2(total-parcela*(n-1)) : parcela,
+    status: i===0 ? base.status : "Previsto"
+  }));
+}
+
+/* ---------- conexão ---------- */
+(function lerConvite(){
+  const q=new URLSearchParams(location.search);
+  if(q.get("api")||q.get("chave")){
+    const c=load("conexao",{});
+    if(q.get("api")) c.api=q.get("api");
+    if(q.get("chave")) c.chave=q.get("chave");
+    save("conexao",c);
+    history.replaceState(null,"",location.pathname);
+  }
+})();
+const con = () => load("conexao",{});
+const conectado = () => { const c=con(); return !!(c.api && c.chave && c.nome); };
+
+const hoje = new Date();
+const HOJE = {y:hoje.getFullYear(), m:hoje.getMonth(), d:hoje.getDate()};
+const cache = load("cache",{config:null, anos:{}, parcelados:[], agora:null});
+const S = {
+  config: cache.config, anos: cache.anos||{}, parcelados: cache.parcelados||[], agora: cache.agora,
+  fila: load("fila",[]), carregando:false, erro:null, enviando:false,
+  tab:"inicio", filtro:"", catFiltro:"", ym:{y:HOJE.y, m:HOJE.m}
+};
+function guardarCache(){ save("cache",{config:S.config, anos:S.anos, parcelados:S.parcelados, agora:S.agora}); }
+
+const ERR = {
+  chave_invalida:"Chave de acesso incorreta. Confira em Ajustes › Conexão.",
+  dados_invalidos:"Os dados do lançamento foram recusados.",
+  rede:"Sem conexão com a internet agora.",
+  resposta:"O endereço da conexão não respondeu como esperado. Confira em Ajustes › Conexão.",
+  config:"Configure a conexão em Ajustes."
+};
+const errMsg = e => (e && (ERR[e.codigo] || e.mensagem)) || "Não foi possível concluir.";
+
+async function api(metodo, corpo){
+  const c=con(); if(!c.api) throw {codigo:"config"};
+  const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),40000);
+  let res;
+  try{
+    if(metodo==="GET"){
+      const q=new URLSearchParams({...corpo, chave:c.chave});
+      res=await fetch(`${c.api}?${q}`,{signal:ctrl.signal,cache:"no-store"});
+    }else{
+      res=await fetch(c.api,{method:"POST",body:JSON.stringify({...corpo,chave:c.chave}),signal:ctrl.signal});
+    }
+  }catch(e){ throw {codigo:"rede"}; }
+  finally{ clearTimeout(t); }
+  let j; try{ j=await res.json(); }catch(e){ throw {codigo:"resposta"}; }
+  if(!j.ok) throw j;
+  return j;
+}
+
+async function atualizar(){
+  if(!conectado()) return render();
+  S.carregando=true; S.erro=null; render();
+  await enviarFila();
+  try{
+    const d=await api("GET",{acao:"dados", ano:S.ym.y});
+    S.config=d.config; S.anos[d.ano]=d.lanc; S.parcelados=d.parcelados; S.agora=d.agora;
+    guardarCache();
+  }catch(e){ S.erro=e; }
+  S.carregando=false; render();
+}
+
+async function enviarFila(){
+  if(S.enviando || !S.fila.length) return;
+  S.enviando=true; let n=0;
+  for(const op of [...S.fila]){
+    try{
+      if(op.op==="salvar") await api("POST",{acao:"salvar", lancs:op.lancs});
+      else await api("POST",{acao:"apagar", ids:op.ids});
+    }catch(e){
+      if(e.codigo==="rede"||e.codigo==="resposta") break;
+      op.erro=errMsg(e); save("fila",S.fila); continue;
+    }
+    S.fila=S.fila.filter(x=>x.id!==op.id); save("fila",S.fila); n++;
+  }
+  S.enviando=false;
+  return n;
+}
+function enfileirar(op){
+  const ids = op.op==="salvar" ? op.lancs.map(l=>l.id) : op.ids;
+  // um item recusado que foi corrigido ou apagado sai da fila antiga
+  S.fila = S.fila.filter(o=>!(o.erro && o.op==="salvar" && o.lancs.every(l=>ids.includes(l.id))));
+  op.id=uid(); S.fila.push(op); save("fila",S.fila); render();
+  enviarFila().then(()=>{ if(S.fila.some(x=>x.id===op.id && !x.erro)) toast("Sem conexão. Fica guardado no celular e sobe sozinho."); atualizar(); });
+}
+window.addEventListener("online",()=>atualizar());
+
+/* ---------- dados vistos pela tela (servidor + fila local) ---------- */
+function aplicarFila(lista){
+  const m=new Map(lista.map(l=>[l.id,l]));
+  S.fila.forEach(op=>{
+    if(op.op==="salvar") op.lancs.forEach(l=>m.set(l.id,{...l,pend:true,erroEnvio:op.erro}));
+    else op.ids.forEach(id=>m.delete(id));
+  });
+  return [...m.values()].map(l=>({...l,data:parseDate(l.data)})).filter(l=>l.data);
+}
+const doAno = y => aplicarFila(S.anos[y]||[]).filter(l=>l.data.y===y);
+function doMes(){ return doAno(S.ym.y).filter(l=>l.data.y===S.ym.y && l.data.m===S.ym.m && l.status!=="Cancelado"); }
+const CFG = () => S.config || {categorias:[],categoriasReceita:[],subcategorias:[],contas:[],cartoes:[],formas:[],status:[],naturezas:[],orcamento:{}};
+const nomesCartoes = () => CFG().cartoes.map(c=>c.nome);
+const todasContas = () => CFG().contas.concat(nomesCartoes());
+
+function resumo(){
+  const L=doMes(); let rec=0,desp=0,prevN=0,prevV=0,atr=0; const cats={}, cart={};
+  L.forEach(l=>{
+    if(l.tipo==="Receita") rec+=l.valor;
+    else{ desp+=l.valor; const c=l.cat||"Sem categoria"; cats[c]=(cats[c]||0)+l.valor;
+      if(l.forma==="Cartão de crédito") cart[l.conta]=(cart[l.conta]||0)+l.valor; }
+    if(l.status==="Previsto"){prevN++;prevV+=l.valor;}
+    if(l.status==="Atrasado") atr++;
+  });
+  return {L,rec,desp,saldo:rec-desp,prevN,prevV,atr,cats,cart};
+}
+function gruposParcelas(){
+  const g={};
+  aplicarFila(S.parcelados).filter(l=>l.grupo && l.status!=="Cancelado").forEach(l=>{ (g[l.grupo]=g[l.grupo]||[]).push(l); });
+  const ref=chaveMes(HOJE);
+  return Object.entries(g).map(([id,ls])=>{
+    ls.sort((a,b)=>chaveMes(a.data)-chaveMes(b.data));
+    const n=ls.length, total=ls.reduce((a,l)=>a+l.valor,0);
+    const pagas=ls.filter(l=>chaveMes(l.data)<=ref).length;
+    const futuras=ls.filter(l=>chaveMes(l.data)>ref);
+    return {id, compra:ls[0].desc.replace(/\s+\d+\/\d+$/,""), conta:ls[0].conta, cat:ls[0].cat, n, total,
+      mensal:ls[0].valor, pagas, saldo:futuras.reduce((a,l)=>a+l.valor,0), fim:ls[n-1].data, ls};
+  }).sort((a,b)=>chaveMes(a.fim)-chaveMes(b.fim));
+}
+
+function toast(msg){
+  const r=$("#toastRoot"); r.innerHTML=`<div class="toast" role="status">${esc(msg)}</div>`;
+  clearTimeout(toast.t); toast.t=setTimeout(()=>r.innerHTML="",3200);
+}
+const quando = s => s? new Date(s).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}) : "—";
+const fimTxt = p => `${MES_CURTO[p.m]}/${p.y}`;
+
+/* ---------- telas ---------- */
+function render(){
+  $("#mes").textContent=`${MESES[S.ym.m]} ${S.ym.y}`;
+  $$(".tab").forEach(t=>t.setAttribute("aria-current", t.dataset.tab===S.tab?"page":"false"));
+  $("#reload").classList.toggle("girando", S.carregando);
+  const m=$("#main");
+  if(!conectado()){ m.innerHTML=`<div class="banner"><b>Bem-vindo</b><p class="note">Configure a conexão para começar.</p><button class="btn" id="abrirCfg">Configurar</button></div>`; $("#abrirCfg").onclick=()=>abrirAjustes("conexao"); return; }
+  if(!S.config){
+    m.innerHTML = S.erro
+      ? `<div class="banner err"><b>Não consegui conectar</b><p class="note">${esc(errMsg(S.erro))}</p><button class="btn" id="retry">Tentar de novo</button></div>`
+      : `<div class="skel"></div><div class="skel"></div><p class="note">Conectando…</p>`;
+    const r=$("#retry"); if(r) r.onclick=atualizar; return;
+  }
+  let topo="";
+  if(S.erro) topo+=`<div class="banner ${S.erro.codigo==="rede"?"":"err"}"><p class="note">${esc(errMsg(S.erro))} Mostrando os dados de ${quando(S.agora)}.</p></div>`;
+  if(!S.anos[S.ym.y] && !S.carregando && !S.erro) { atualizar(); }
+  const nf=S.fila.length;
+  if(nf) topo+=`<p class="note">${nf} alteraç${nf>1?"ões":"ão"} aguardando envio. ${S.fila.some(x=>x.erro)?"Algumas foram recusadas; toque no item para corrigir.":"Sobem sozinhas quando houver conexão."}</p>`;
+  m.innerHTML = topo + ({inicio:telaInicio,lista:telaLista,cartoes:telaCartoes,parcelas:telaParcelas}[S.tab])();
+  bindTela();
+}
+
+function telaInicio(){
+  const R=resumo(), orc=CFG().orcamento||{};
+  const comp = R.rec>0? R.desp/R.rec : 0;
+  const cats = Object.entries(R.cats).sort((a,b)=>b[1]-a[1]);
+  const maxc = cats.length? cats[0][1]:1;
+  const orcTot = Object.values(orc).reduce((a,b)=>a+(+b||0),0);
+  const G = gruposParcelas().filter(g=>g.pagas<g.n);
+  const mesSel=chaveMes(S.ym);
+  const parcMes = gruposParcelas().reduce((a,g)=>a+g.ls.filter(l=>chaveMes(l.data)===mesSel).reduce((x,l)=>x+l.valor,0),0);
+  const blocoParc = G.length?`<section class="block"><h2>Compras parceladas</h2><div class="rows">
+    <button class="row" data-ir="parcelas"><span class="t">${G.length} em andamento</span><span class="a num">${brl(parcMes)}</span>
+    <span class="s">Parcelas em ${MESES[S.ym.m]} · saldo a pagar ${brl(G.reduce((a,g)=>a+g.saldo,0))}</span></button></div></section>`:"";
+  if(!R.L.length) return `<div class="hero"><p class="label">Nada lançado em ${MESES[S.ym.m]}</p>
+      <p class="note">Toque em + para lançar a primeira receita ou despesa do mês.</p></div>${blocoParc}`;
+  return `
+  <div class="hero">
+    <div class="saldo"><p class="label">Saldo do mês</p><p class="v num ${R.saldo<0?"out":"in"}">${brl(R.saldo)}</p></div>
+    <div class="pair">
+      <div><p class="label">Receitas</p><p class="v num in">${brl(R.rec)}</p></div>
+      <div><p class="label">Despesas</p><p class="v num out">${brl(R.desp)}</p></div>
+    </div>
+    <div style="display:grid;gap:6px">
+      <div style="display:flex;justify-content:space-between"><span class="label">Comprometimento da receita</span><span class="num" style="font-weight:600">${R.rec?pct(comp):"—"}</span></div>
+      <div class="meter ${comp>1?"hot":comp>=.8?"warm":""}"><i style="width:${Math.min(100,comp*100)}%"></i></div>
+    </div>
+    ${(R.prevN||R.atr)?`<p class="note">${R.prevN?`${R.prevN} previsto${R.prevN>1?"s":""} ainda não pago${R.prevN>1?"s":""} (${brl(R.prevV)}).`:""} ${R.atr?`<b class="out">${R.atr} em atraso.</b>`:""}</p>`:""}
+  </div>
+  ${cats.length?`<section class="block">
+    <h2>Despesas por categoria</h2>
+    <div class="rows">
+      ${cats.map(([c,v])=>{ const o=+orc[c]||0; const ratio=o? v/o : v/maxc;
+        return `<button class="row" data-cat="${esc(c)}"><span class="t">${esc(c)}</span><span class="a num">${brl(v)}</span>
+          <span class="s">${o?`${pct(v/o)} de ${brl(o)} orçados${v>o?` · <b class="out">passou ${brl(v-o)}</b>`:""}`:`${pct(v/R.desp)} das despesas`}</span>
+          <div class="meter ${o&&ratio>1?"hot":o&&ratio>=.8?"warm":""}"><i style="width:${Math.min(100,ratio*100)}%"></i></div></button>`;}).join("")}
+    </div>
+    ${orcTot?"":`<p class="note">Defina limites por categoria em Ajustes › Orçamento para acompanhar aqui.</p>`}
+  </section>`:""}
+  ${blocoParc}`;
+}
+
+function telaLista(){
+  const f=S.filtro.toLowerCase();
+  const L=doMes().filter(l=>(!S.catFiltro||l.cat===S.catFiltro) && (!f||[l.desc,l.cat,l.sub,l.conta,l.autor].join(" ").toLowerCase().includes(f)))
+    .sort((a,b)=> (b.data.d-a.data.d) || String(b.id).localeCompare(String(a.id)));
+  const total=L.reduce((a,l)=>a+(l.tipo==="Receita"?l.valor:-l.valor),0);
+  let html=`<input class="search" id="busca" type="search" placeholder="Buscar descrição, categoria, conta ou pessoa" value="${esc(S.filtro)}">`;
+  if(S.catFiltro) html+=`<div class="chips"><button class="chip" aria-pressed="true" id="limpaCat">${esc(S.catFiltro)} ✕</button></div>`;
+  if(!L.length) return html+`<div class="rows"><p class="empty">Nenhum lançamento ${S.filtro||S.catFiltro?"com esse filtro":"neste mês"}.</p></div>`;
+  html+=`<p class="note">${L.length} lançamento${L.length>1?"s":""} · resultado ${brl(total)}</p>`;
+  let dia=null, buf="";
+  L.forEach(l=>{
+    if(l.data.d!==dia){ if(buf) html+=`<div class="rows">${buf}</div>`; buf=""; dia=l.data.d;
+      html+=`<p class="day">${SEMANA[new Date(l.data.y,l.data.m,l.data.d).getDay()]}, ${l.data.d} de ${MESES[l.data.m]}</p>`; }
+    const pill = l.erroEnvio?`<span class="pill atr">recusado</span>`:l.pend?`<span class="pill pend">enviando</span>`:l.status==="Previsto"?`<span class="pill prev">previsto</span>`:l.status==="Atrasado"?`<span class="pill atr">atrasado</span>`:"";
+    buf+=`<button class="row" data-id="${esc(l.id)}"><span class="t">${esc(l.desc)}${pill}</span>
+      <span class="a num ${l.tipo==="Receita"?"in":"out"}">${l.tipo==="Receita"?"+":"−"}${brl(l.valor).replace("−","")}</span>
+      <span class="s">${esc([l.cat,l.sub&&l.sub!=="Outros"?l.sub:"",l.conta,l.autor].filter(Boolean).join(" · "))}${l.erroEnvio?` · ${esc(l.erroEnvio)}`:""}</span></button>`;
+  });
+  if(buf) html+=`<div class="rows">${buf}</div>`;
+  return html;
+}
+
+function telaCartoes(){
+  const R=resumo(), C=CFG().cartoes;
+  if(!C.length) return `<div class="rows"><p class="empty">Nenhum cartão cadastrado. Adicione em Ajustes › Cartões.</p></div>`;
+  const G=gruposParcelas(), mesSel=chaveMes(S.ym);
+  return `<p class="note">Compras no cartão em ${MESES[S.ym.m]}, comparadas ao limite. "Parcelas futuras" é o que ainda vai cair nos próximos meses.</p>
+  <div class="rows">${C.map(c=>{ const g=R.cart[c.nome]||0; const u=c.limite?g/c.limite:0;
+    const fut=G.filter(x=>x.conta===c.nome).reduce((a,x)=>a+x.ls.filter(l=>chaveMes(l.data)>mesSel).reduce((s,l)=>s+l.valor,0),0);
+    return `<div class="row"><span class="t">${esc(c.nome)}</span><span class="a num">${brl(g)}</span>
+    <span class="s">Fecha dia ${esc(c.fechamento)} · vence dia ${esc(c.vencimento)} · disponível ${brl((+c.limite||0)-g)}${fut?` · parcelas futuras ${brl(fut)}`:""}</span>
+    <div class="meter ${u>1?"hot":u>=.8?"warm":""}"><i style="width:${Math.min(100,u*100)}%"></i></div></div>`;}).join("")}</div>`;
+}
+
+function telaParcelas(){
+  const G=gruposParcelas(), at=G.filter(g=>g.pagas<g.n), q=G.filter(g=>g.pagas>=g.n);
+  const item=g=>`<button class="row" data-grupo="${esc(g.id)}"><span class="t">${esc(g.compra)}</span><span class="a num">${brl(g.mensal)}</span>
+    <span class="s">${g.pagas}/${g.n} · ${esc(g.conta)} · termina ${fimTxt(g.fim)}${g.saldo?` · resta ${brl(g.saldo)}`:""}</span>
+    <div class="meter"><i style="width:${Math.min(100,g.pagas/g.n*100)}%"></i></div></button>`;
+  return `<div class="hero"><div class="pair">
+    <div><p class="label">Parcelas por mês</p><p class="v num">${brl(at.reduce((a,g)=>a+g.mensal,0))}</p></div>
+    <div><p class="label">Saldo a pagar</p><p class="v num">${brl(at.reduce((a,g)=>a+g.saldo,0))}</p></div></div>
+    <p class="note">Para registrar uma compra parcelada, lance no cartão de crédito e informe o número de parcelas.</p></div>
+  <section class="block"><h2>Em andamento (${at.length})</h2><div class="rows">${at.map(item).join("")||`<p class="empty">Nenhuma compra parcelada em andamento.</p>`}</div></section>
+  ${q.length?`<section class="block"><h2>Quitadas (${q.length})</h2><div class="rows">${q.map(item).join("")}</div></section>`:""}`;
+}
+
+function acharLanc(id){
+  for(const y of Object.keys(S.anos)){ const l=aplicarFila(S.anos[y]).find(x=>x.id===id); if(l) return l; }
+  return aplicarFila(S.parcelados).find(x=>x.id===id);
+}
+function bindTela(){
+  $$("[data-id]").forEach(b=>b.onclick=()=>{ const l=acharLanc(b.dataset.id); if(l) abrirForm(l); });
+  $$("[data-grupo]").forEach(b=>b.onclick=()=>{ const g=gruposParcelas().find(x=>x.id===b.dataset.grupo); if(!g) return;
+    const prox=g.ls.find(l=>chaveMes(l.data)>=chaveMes(HOJE))||g.ls[g.n-1]; S.ym={y:prox.data.y,m:prox.data.m}; abrirForm(prox); });
+  $$("[data-cat]").forEach(b=>b.onclick=()=>{S.catFiltro=b.dataset.cat;S.filtro="";S.tab="lista";render();window.scrollTo(0,0);});
+  $$("[data-ir]").forEach(b=>b.onclick=()=>{S.tab=b.dataset.ir;render();window.scrollTo(0,0);});
+  const busca=$("#busca"); if(busca){ busca.oninput=()=>{ S.filtro=busca.value; const pos=busca.selectionStart; render(); const nb=$("#busca"); if(nb){nb.focus(); try{nb.setSelectionRange(pos,pos);}catch(e){}} }; }
+  const lc=$("#limpaCat"); if(lc) lc.onclick=()=>{S.catFiltro="";render();};
+}
+
+/* ---------- lançamento ---------- */
+function abrirForm(ed){
+  const C=CFG(), last=load("ultimos",{});
+  const dataPadrao=(S.ym.y===HOJE.y&&S.ym.m===HOJE.m)?HOJE:{y:S.ym.y,m:S.ym.m,d:1};
+  const F = ed? {...ed} : {tipo:"Despesa", valor:"", desc:"", data:dataPadrao, cat:"", sub:"", conta:last.conta||todasContas()[0]||"", forma:last.forma||"Pix", nat:"Variável", status:"Pago"};
+  const opts=(list,v,vazio)=>{ const l=[...(list||[])]; if(v&&!l.includes(v)) l.unshift(v); return (vazio?`<option value="">${vazio}</option>`:"")+l.map(o=>`<option ${o===v?"selected":""}>${esc(o)}</option>`).join(""); };
+  const catsDe = t => t==="Receita" ? (C.categoriasReceita||[]) : C.categorias;
+  const root=$("#sheetRoot");
+  const grupo = ed&&ed.grupo ? gruposParcelas().find(g=>g.id===ed.grupo) : null;
+  root.innerHTML=`<div class="sheet" id="sheetBg"><form class="panel" id="form" autocomplete="off" novalidate>
+    <div class="head"><h2>${ed?"Editar lançamento":"Novo lançamento"}</h2><button type="button" class="iconbtn" id="fechar" aria-label="Fechar">✕</button></div>
+    <div class="seg tipo" role="group" aria-label="Tipo">${["Despesa","Receita"].map(t=>`<button type="button" data-v="${t}" aria-pressed="${F.tipo===t}">${t}</button>`).join("")}</div>
+    <label class="valor"><span>R$</span><input id="f-valor" inputmode="decimal" placeholder="0,00" value="${F.valor?esc(F.valor.toLocaleString("pt-BR",{minimumFractionDigits:2})):""}" aria-label="Valor"></label>
+    <div class="field"><label class="label" for="f-desc">Descrição</label><input id="f-desc" value="${esc(F.desc)}" placeholder="Ex.: Supermercado Quarteto" list="descs"></div>
+    <datalist id="descs">${[...new Set(doAno(S.ym.y).map(l=>l.desc.replace(/\s+\d+\/\d+$/,"")))].slice(0,300).map(x=>`<option value="${esc(x)}">`).join("")}</datalist>
+    <div class="field"><span class="label">Categoria</span><div class="chips" id="f-cats"></div></div>
+    <div class="grid2">
+      <div class="field"><label class="label" for="f-data">Data</label><input id="f-data" type="date" value="${iso(F.data)}"></div>
+      <div class="field"><label class="label" for="f-conta">Conta ou cartão</label><select id="f-conta">${opts(todasContas(),F.conta)}</select></div>
+      <div class="field"><label class="label" for="f-forma">Forma de pagamento</label><select id="f-forma">${opts(C.formas,F.forma)}</select></div>
+      <div class="field" id="campoParc" ${ed?"hidden":""}><label class="label" for="f-parc">Parcelas</label><select id="f-parc">${Array.from({length:24},(_,i)=>`<option value="${i+1}">${i===0?"À vista":(i+1)+"x"}</option>`).join("")}</select></div>
+      <div class="field"><label class="label" for="f-status">Status</label><select id="f-status">${opts(C.status,F.status)}</select></div>
+      <div class="field"><label class="label" for="f-sub">Subcategoria</label><select id="f-sub">${opts(C.subcategorias,F.sub,"—")}</select></div>
+      <div class="field"><label class="label" for="f-nat">Natureza</label><select id="f-nat">${opts(C.naturezas,F.nat)}</select></div>
+    </div>
+    <p class="note" id="parcInfo"></p>
+    ${grupo?`<p class="note">Parcela ${esc(ed.parcela)} de “${esc(grupo.compra)}”. A alteração vale só para esta parcela.</p>`:""}
+    ${ed&&ed.autor?`<p class="note">Lançado por ${esc(ed.autor)}.</p>`:""}
+    <p class="note" id="f-msg" role="alert"></p>
+    <div id="confirmBox"></div>
+    <div class="actions ${ed?"":"single"}">${ed?`<button type="button" class="btn danger" id="excluir">Excluir</button>`:""}<button class="btn" id="salvar">${ed?"Salvar alterações":"Lançar"}</button></div>
+  </form></div>`;
+
+  const fechar=()=>root.innerHTML="";
+  const pintaCats=()=>{ $("#f-cats").innerHTML=catsDe(F.tipo).map(c=>`<button type="button" class="chip" data-c="${esc(c)}" aria-pressed="${F.cat===c}">${esc(c)}</button>`).join("")||`<span class="note">Cadastre categorias em Ajustes.</span>`;
+    $$("#f-cats .chip").forEach(b=>b.onclick=()=>{F.cat=F.cat===b.dataset.c?"":b.dataset.c; pintaCats();}); };
+  const parcInfo=()=>{
+    const cartao=$("#f-forma").value==="Cartão de crédito" && F.tipo==="Despesa";
+    $("#campoParc").hidden = !!ed || !cartao; if(!cartao) $("#f-parc").value="1";
+    const n=+$("#f-parc").value, v=parseMoney($("#f-valor").value);
+    $("#parcInfo").textContent = (!ed && n>1 && v>0) ? `Compra de ${brl(v)} em ${n}x de ${brl(Math.floor(v/n*100)/100)}. As parcelas são lançadas uma em cada mês, a partir da data informada.` : "";
+  };
+  pintaCats(); parcInfo();
+  $("#fechar").onclick=fechar;
+  $("#sheetBg").onclick=e=>{ if(e.target.id==="sheetBg") fechar(); };
+  $$(".seg.tipo button").forEach(b=>b.onclick=()=>{ F.tipo=b.dataset.v; if(!catsDe(F.tipo).includes(F.cat)) F.cat="";
+    $$(".seg.tipo button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+    if(!ed){ $("#f-status").value = F.tipo==="Receita" && (C.status||[]).includes("Recebido") ? "Recebido" : "Pago"; }
+    pintaCats(); parcInfo(); });
+  $("#f-conta").onchange=()=>{ if(nomesCartoes().includes($("#f-conta").value)) $("#f-forma").value="Cartão de crédito"; parcInfo(); };
+  $("#f-forma").onchange=parcInfo; $("#f-parc").onchange=parcInfo; $("#f-valor").oninput=parcInfo;
+  $("#f-desc").onchange=()=>{ if(ed) return; const t=$("#f-desc").value.trim().toLowerCase();
+    const prev=doAno(S.ym.y).filter(l=>l.desc.replace(/\s+\d+\/\d+$/,"").trim().toLowerCase()===t).pop(); if(!prev) return;
+    if(prev.tipo!==F.tipo){ F.tipo=prev.tipo; $$(".seg.tipo button").forEach(x=>x.setAttribute("aria-pressed",x.dataset.v===F.tipo)); }
+    F.cat=prev.cat; pintaCats();
+    ["sub","conta","forma","nat"].forEach(k=>{ const el=$("#f-"+k); if([...el.options].some(o=>o.value===prev[k])) el.value=prev[k]; });
+    parcInfo(); };
+  if(!ed) setTimeout(()=>{ try{$("#f-valor").focus();}catch(e){} },60);
+
+  const msg=t=>{$("#f-msg").textContent=t;};
+  $("#form").onsubmit=e=>{
+    e.preventDefault();
+    const valor=r2(parseMoney($("#f-valor").value)), desc=$("#f-desc").value.trim(), dt=$("#f-data").value;
+    if(!(valor>0)) return msg("Informe um valor maior que zero.");
+    if(!desc) return msg("Informe uma descrição.");
+    if(!dt) return msg("Informe a data.");
+    if(F.tipo==="Despesa" && !F.cat && C.categorias.length) return msg("Escolha a categoria.");
+    const base={id:ed?ed.id:uid(), data:dt, desc, tipo:F.tipo, cat:F.cat, sub:$("#f-sub").value, conta:$("#f-conta").value,
+      forma:$("#f-forma").value, nat:$("#f-nat").value, valor, status:$("#f-status").value,
+      autor:(ed&&ed.autor)||con().nome, grupo:ed?ed.grupo||"":"", parcela:ed?ed.parcela||"":""};
+    const n=+$("#f-parc").value||1;
+    const lancs = (!ed && n>1) ? gerarParcelas(base, valor, n) : [base];
+    save("ultimos",{conta:base.conta,forma:base.forma});
+    const p=parseDate(dt); S.ym={y:p.y,m:p.m};
+    fechar();
+    toast(ed?"Lançamento atualizado": n>1?`Compra lançada em ${n} parcelas`:"Lançado");
+    enfileirar({op:"salvar", lancs});
+  };
+  if(ed) $("#excluir").onclick=()=>{
+    $("#confirmBox").innerHTML=`<div class="confirm"><p>Apagar “${esc(ed.desc)}” (${brl(ed.valor)})?</p>
+      <div class="grid2"><button type="button" class="btn ghost" id="nao">Manter</button><button type="button" class="btn danger" id="sim">${grupo?"Só esta parcela":"Apagar"}</button></div>
+      ${grupo?`<button type="button" class="btn danger" id="simTodas">Apagar a compra inteira (${grupo.n} parcelas)</button>`:""}</div>`;
+    $("#nao").onclick=()=>$("#confirmBox").innerHTML="";
+    $("#sim").onclick=()=>{ fechar(); toast("Lançamento apagado"); enfileirar({op:"apagar", ids:[ed.id]}); };
+    const t=$("#simTodas"); if(t) t.onclick=()=>{ fechar(); toast("Compra parcelada apagada"); enfileirar({op:"apagar", ids:grupo.ls.map(l=>l.id)}); };
+  };
+}
+
+/* ---------- ajustes ---------- */
+function abrirAjustes(foco){
+  const c=con();
+  const C=JSON.parse(JSON.stringify(CFG()));
+  C.categoriasReceita=C.categoriasReceita||[]; C.orcamento=C.orcamento||{};
+  const root=$("#sheetRoot");
+  const lista=(chave,titulo,dica)=>`<section class="ajuste"><h3>${titulo}</h3>${dica?`<p class="note">${dica}</p>`:""}
+    <div class="chips" data-lista="${chave}"></div>
+    <div class="addrow"><input id="add-${chave}" placeholder="Adicionar"><button type="button" class="btn ghost" data-add="${chave}">Adicionar</button></div></section>`;
+  root.innerHTML=`<div class="sheet" id="sheetBg"><div class="panel" id="ajustes">
+    <div class="head"><h2>Ajustes</h2><button type="button" class="iconbtn" id="fechar" aria-label="Fechar">✕</button></div>
+    ${S.config?`
+    ${lista("categorias","Categorias de despesa","Mudar o nome aqui não altera lançamentos já feitos.")}
+    ${lista("categoriasReceita","Categorias de receita")}
+    ${lista("subcategorias","Subcategorias")}
+    ${lista("contas","Contas","Contas bancárias e dinheiro. Cartões ficam na seção abaixo.")}
+    <section class="ajuste"><h3>Cartões de crédito</h3><div id="listaCartoes" class="cartoes"></div>
+      <button type="button" class="btn ghost" id="addCartao">Adicionar cartão</button></section>
+    <section class="ajuste"><h3>Orçamento mensal</h3><p class="note">Limite de gasto por categoria. Deixe em branco para não acompanhar.</p><div id="listaOrc" class="orc"></div></section>
+    <p class="note" id="a-msg" role="alert"></p>
+    <button type="button" class="btn" id="salvarCfg">Salvar ajustes</button>
+    <section class="ajuste"><h3>Exportar</h3><p class="note">Baixa os lançamentos de ${S.ym.y} em um arquivo que abre no Excel.</p>
+      <button type="button" class="btn ghost" id="exportar">Exportar ${S.ym.y} para Excel (CSV)</button></section>`:""}
+    <section class="ajuste" id="secConexao"><h3>Você e a conexão</h3>
+      <div class="field"><label class="label" for="c-nome">Seu nome</label><input id="c-nome" value="${esc(c.nome||"")}" placeholder="Aparece em cada lançamento seu"></div>
+      <div class="field"><label class="label" for="c-api">Endereço da conexão</label><input id="c-api" value="${esc(c.api||"")}" placeholder="https://script.google.com/macros/s/…/exec" inputmode="url"></div>
+      <div class="field"><label class="label" for="c-chave">Chave de acesso</label><input id="c-chave" value="${esc(c.chave||"")}"></div>
+      <p class="note" id="c-msg" role="alert"></p>
+      <button type="button" class="btn ${S.config?"ghost":""}" id="c-salvar">Salvar e testar conexão</button>
+    </section>
+    ${(c.api&&c.chave)?`<section class="ajuste"><h3>Convidar outra pessoa</h3>
+      <p class="note">Quem abrir este link já fica conectado; só precisa informar o nome. O link contém a chave: envie só para quem pode lançar.</p>
+      <input id="c-link" readonly value="${esc(location.origin+location.pathname+"?api="+encodeURIComponent(c.api)+"&chave="+encodeURIComponent(c.chave))}">
+      <button type="button" class="btn ghost" id="c-copiar">Copiar link de convite</button></section>`:""}
+  </div></div>`;
+  const fechar=()=>root.innerHTML="";
+  $("#fechar").onclick=fechar;
+  if(foco==="conexao") setTimeout(()=>$("#secConexao").scrollIntoView(),50);
+
+  if(S.config){
+    const pintaLista=k=>{ const el=document.querySelector(`[data-lista="${k}"]`);
+      el.innerHTML=C[k].map((v,i)=>`<span class="chip tira">${esc(v)}<button type="button" aria-label="Remover ${esc(v)}" data-rm="${k}:${i}">✕</button></span>`).join("")||`<span class="note">Nenhum item.</span>`;
+      el.querySelectorAll("[data-rm]").forEach(b=>b.onclick=()=>{ const [kk,i]=b.dataset.rm.split(":"); C[kk].splice(+i,1); pintaLista(kk); if(kk==="categorias") pintaOrc(); }); };
+    ["categorias","categoriasReceita","subcategorias","contas"].forEach(pintaLista);
+    $$("[data-add]").forEach(b=>b.onclick=()=>{ const k=b.dataset.add, inp=$("#add-"+k), v=inp.value.trim(); if(!v) return;
+      if(!C[k].includes(v)) C[k].push(v); inp.value=""; pintaLista(k); if(k==="categorias") pintaOrc(); });
+    const pintaCartoes=()=>{ $("#listaCartoes").innerHTML=C.cartoes.map((k,i)=>`<div class="cartao">
+        <input aria-label="Nome do cartão" data-ct="${i}:nome" value="${esc(k.nome)}" placeholder="Nome do cartão">
+        <div class="grid3">
+          <label><span class="label">Limite</span><input inputmode="decimal" data-ct="${i}:limite" value="${k.limite?esc(Number(k.limite).toLocaleString("pt-BR")):""}"></label>
+          <label><span class="label">Fecha dia</span><input inputmode="numeric" data-ct="${i}:fechamento" value="${esc(k.fechamento||"")}"></label>
+          <label><span class="label">Vence dia</span><input inputmode="numeric" data-ct="${i}:vencimento" value="${esc(k.vencimento||"")}"></label>
+        </div>
+        <button type="button" class="link out" data-rmct="${i}">Remover cartão</button></div>`).join("")||`<p class="note">Nenhum cartão.</p>`;
+      $$("[data-ct]").forEach(inp=>inp.oninput=()=>{ const [i,campo]=inp.dataset.ct.split(":"); C.cartoes[+i][campo]= campo==="nome"? inp.value.trim() : campo==="limite"? parseMoney(inp.value) : (parseInt(inp.value,10)||""); });
+      $$("[data-rmct]").forEach(b=>b.onclick=()=>{ C.cartoes.splice(+b.dataset.rmct,1); pintaCartoes(); }); };
+    pintaCartoes();
+    $("#addCartao").onclick=()=>{ C.cartoes.push({nome:"",limite:0,fechamento:"",vencimento:""}); pintaCartoes(); };
+    const pintaOrc=()=>{ $("#listaOrc").innerHTML=C.categorias.map(cat=>`<label class="orcrow"><span>${esc(cat)}</span>
+        <input inputmode="decimal" data-orc="${esc(cat)}" placeholder="—" value="${C.orcamento[cat]?esc(Number(C.orcamento[cat]).toLocaleString("pt-BR",{minimumFractionDigits:2})):""}"></label>`).join("");
+      $$("[data-orc]").forEach(inp=>inp.oninput=()=>{ const v=parseMoney(inp.value); if(v>0) C.orcamento[inp.dataset.orc]=v; else delete C.orcamento[inp.dataset.orc]; }); };
+    pintaOrc();
+    $("#salvarCfg").onclick=async()=>{
+      const m=t=>$("#a-msg").textContent=t;
+      C.cartoes=C.cartoes.filter(k=>k.nome);
+      const nomes=C.contas.concat(C.cartoes.map(k=>k.nome));
+      if(new Set(nomes).size!==nomes.length) return m("Há contas ou cartões com o mesmo nome.");
+      Object.keys(C.orcamento).forEach(k=>{ if(!C.categorias.includes(k)) delete C.orcamento[k]; });
+      const b=$("#salvarCfg"); b.disabled=true; b.textContent="Salvando…";
+      try{ await api("POST",{acao:"config", config:C}); S.config=C; guardarCache(); fechar(); toast("Ajustes salvos"); render(); }
+      catch(err){ b.disabled=false; b.textContent="Salvar ajustes"; m(err.codigo==="rede"?"Sem conexão. Os ajustes só podem ser salvos on-line.":errMsg(err)); }
+    };
+    $("#exportar").onclick=()=>{
+      const L=doAno(S.ym.y).sort((a,b)=>iso(a.data).localeCompare(iso(b.data)));
+      const cab=["Data","Descrição","Tipo","Categoria","Subcategoria","Conta/Cartão","Forma de pagamento","Natureza","Valor","Status","Parcela","Lançado por"];
+      const cel=v=>{ const s=String(v==null?"":v); return /[;"\n]/.test(s)?`"${s.replace(/"/g,'""')}"`:s; };
+      const linhas=L.map(l=>[`${String(l.data.d).padStart(2,"0")}/${String(l.data.m+1).padStart(2,"0")}/${l.data.y}`,l.desc,l.tipo,l.cat,l.sub,l.conta,l.forma,l.nat,
+        l.valor.toLocaleString("pt-BR",{minimumFractionDigits:2,useGrouping:false}),l.status,l.parcela,l.autor].map(cel).join(";"));
+      const blob=new Blob(["﻿"+[cab.join(";")].concat(linhas).join("\r\n")],{type:"text/csv;charset=utf-8"});
+      const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=`financas-${S.ym.y}.csv`;
+      document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);
+    };
+  }
+  $("#c-salvar").onclick=async()=>{
+    const n={nome:$("#c-nome").value.trim(), api:$("#c-api").value.trim(), chave:$("#c-chave").value.trim()};
+    const m=t=>$("#c-msg").textContent=t;
+    if(!n.nome) return m("Informe seu nome.");
+    if(!/^https:\/\/script\.google(usercontent)?\.com\/.+/.test(n.api)) return m("O endereço deve começar com https://script.google.com/macros/s/ e terminar em /exec.");
+    if(!n.chave) return m("Informe a chave de acesso.");
+    save("conexao",n);
+    const b=$("#c-salvar"); b.disabled=true; b.textContent="Testando…";
+    try{ await api("GET",{acao:"ping"}); fechar(); toast("Conectado"); atualizar(); }
+    catch(err){ b.disabled=false; b.textContent="Salvar e testar conexão"; m(errMsg(err)); }
+  };
+  const cp=$("#c-copiar"); if(cp) cp.onclick=async()=>{ const i=$("#c-link"); try{ await navigator.clipboard.writeText(i.value); toast("Link copiado"); }catch(e){ i.select(); toast("Selecione e copie o link"); } };
+}
+
+/* ---------- navegação ---------- */
+$$(".tab").forEach(t=>t.onclick=()=>{S.tab=t.dataset.tab; if(S.tab!=="lista") S.catFiltro=""; render(); window.scrollTo(0,0);});
+$("#prev").onclick=()=>{ S.ym=S.ym.m===0?{y:S.ym.y-1,m:11}:{y:S.ym.y,m:S.ym.m-1}; render(); };
+$("#next").onclick=()=>{ S.ym=S.ym.m===11?{y:S.ym.y+1,m:0}:{y:S.ym.y,m:S.ym.m+1}; render(); };
+$("#reload").onclick=()=>atualizar();
+$("#config").onclick=()=>abrirAjustes();
+$("#add").onclick=()=>{ if(!conectado()) return abrirAjustes("conexao"); if(!S.config) return toast("Aguarde a conexão"); abrirForm(null); };
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible" && conectado()) atualizar(); });
+if("serviceWorker" in navigator){ window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{})); }
+
+window.__teste = {gerarParcelas, somaMeses, parseMoney};
+render();
+if(conectado()) atualizar(); else abrirAjustes("conexao");
+})();
+</script>
+</body>
+</html>
